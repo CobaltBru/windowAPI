@@ -43,8 +43,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)	//메시지 처리 함수
 {
-	HDC		hdc;
+	HDC			hdc;
 	PAINTSTRUCT ps;
+	RECT		rect;
 
 	switch (iMsg)
 	{
@@ -52,7 +53,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)	//�
 		break;
 	case WM_PAINT:
 		hdc = BeginPaint(hwnd, &ps);
-		//출력
+		rect.left = 50;
+		rect.top = 40;
+		rect.right = 200;
+		rect.bottom = 120;
+		DrawText(hdc, _T("HelloWorld"), 10, &rect,
+			DT_SINGLELINE | DT_CENTER | DT_VCENTER);
 		EndPaint(hwnd, &ps);
 		break;
 	case WM_DESTROY:
