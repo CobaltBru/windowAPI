@@ -47,7 +47,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)	//�
 	PAINTSTRUCT		ps;
 	static TCHAR	str[1000];
 	static int		count, yPos;
-	RECT rt = { 0,0,1000,1000 };
+	RECT rt = { 100,100,1000,1000};
 
 	switch (iMsg)
 	{
@@ -56,14 +56,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)	//�
 		break;
 	case WM_PAINT:
 		hdc = BeginPaint(hwnd, &ps);
-		DrawText(hdc, str, _tcslen(str), &rt, DT_TOP | DT_LEFT); //문자열을 출력해준다. 엔터키를 인식해 줄바꿈을 처리해준다
+		TextOut(hdc, 100, 80, _T("I love you"), _tcslen(_T("I love you")));
+		DrawText(hdc, _T("I love you"), _tcslen(_T("I love you")), &rt, DT_TOP | DT_LEFT); 
+
 		EndPaint(hwnd, &ps);
-		break;
-	case WM_CHAR:
-		if (wParam == VK_BACK && count > 0) count--;
-		else str[count++] = wParam; // 문자를 저장한 후 count 를 1늘리고
-		str[count] = NULL;			// NULL로 초기화
-		InvalidateRgn(hwnd, NULL, TRUE); //즉시 WM_PAINT를 호출
 		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
