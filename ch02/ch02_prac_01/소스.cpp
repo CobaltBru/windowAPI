@@ -56,7 +56,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)	//�
 		break;
 	case WM_PAINT:
 		hdc = BeginPaint(hwnd, &ps);
-		TextOut(hdc, 100, 80, _T("I love you"), _tcslen(_T("I love you")));
+		TextOut(hdc, 100, 80, _T("I love you"), _tcslen(_T("I love you"))); //DrawText의 문자열과 곂치지 않도록 한줄 위에 출력해주었다
 		DrawText(hdc, _T("I love you"), _tcslen(_T("I love you")), &rt, DT_TOP | DT_LEFT); 
 
 		EndPaint(hwnd, &ps);

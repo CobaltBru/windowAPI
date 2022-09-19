@@ -55,7 +55,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)	//�
 		hdc = GetDC(hwnd);
 		str[0] = wParam;
 		str[1] = NULL;
-		TextOut(hdc, rand()%100, rand()%100, str, _tcslen(str));
+		TextOut(hdc, rand()%100, rand()%100, str, _tcslen(str)); // 진짜 랜덤이면 곤란하니 범위를 100x100으로 한정
 		ReleaseDC(hwnd, hdc);
 		break;
 	case WM_DESTROY:

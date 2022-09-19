@@ -46,10 +46,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)	//¸
 	const int		MAX = 10;
 	HDC				hdc;
 	PAINTSTRUCT		ps;
-	static TCHAR	str [MAX][MAX+1];
-	static int		lineCounter[MAX];
+	static TCHAR	str [MAX][100]; //¿©·¯ÁÙÀÇ ¹®ÀÚ¿­À» ´ãÀ» °ø°£
+	static int		lineCounter[100]; //ÇÑÁÙ¿¡ ¸î°³ÀÇ ¹®ÀÚ°¡ ÀÖ´ÂÁö ÀúÀåÇÒ °ø°£
 	static int		count, yPos;
-	RECT rt = { 0,0,1000,1000 };
 	int i;
 	switch (iMsg)
 	{
@@ -59,7 +58,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)	//¸
 		break;
 	case WM_PAINT:
 		hdc = BeginPaint(hwnd, &ps);
-		for (i = 0; i <= yPos; i++)
+		for (i = 0; i <= yPos; i++) // ¹Ýº¹¹®À¸·Î ÀúÀåµÈ ¸ðµç ¹®ÀÚ¿­À» Ãâ·Â
 		{
 			TextOut(hdc, 0, i*20, str[i], _tcslen(str[i]));
 		}
@@ -67,33 +66,33 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)	//¸
 		break;
 	case WM_CHAR:
 		if (yPos >= MAX) break;
-		if (wParam == VK_BACK)
+		if (wParam == VK_BACK) // ¹é½ºÆäÀÌ½º
 		{
 			if (count > 0)
 			{
 				count--;
 				str[yPos][count] = NULL;
 			}
-			else if (count == 0)
+			else if (count == 0) // ÇöÀç ÁÙ¿¡ ¹®ÀÚ°¡ ¾ø´Ù¸é?
 			{
-				if (yPos == 0) {}
-				else{
-					yPos--;
-					count = lineCounter[yPos];
+				if (yPos == 0) {} // Ã¹ ÇàÀÌ¸é ¾Æ¹«°Íµµ ÇÏÁö ¾ÊÀ½
+				else{			
+					yPos--;		//±× ¿Ü¿¡´Â ÇàÀ» ÇÑÄ­ ¿Ã¸®°í
+					count = lineCounter[yPos];	//ÀúÀåÇØµÎ¾ú´ø ¹®ÀÚ¿­ °¹¼ö¸¦ ºÒ·¯¿È
 					count--;
-					str[yPos][count] = NULL;
+					str[yPos][count] = NULL; // \0 ¹®ÀÚ¸¦ Áö¿ò
 				}
 			}
 		}
-		else if (wParam == VK_RETURN && yPos < MAX)
+		else if (wParam == VK_RETURN && yPos < MAX) // ¿£ÅÍÅ°
 		{
-			str[yPos][count] = '\0';
-			lineCounter[yPos] = count;
-			yPos++;
+			str[yPos][count] = '\0'; // ³Î¹®ÀÚ·Î ¹®ÀåÀÇ ³¡À» ¾Ë¸²
+			lineCounter[yPos] = count; // ÇöÀç ÇàÀÇ ¹®ÀÚ¿­ ±æÀÌ¸¦ ÀúÀå
+			yPos++;		//Çà Áõ°¡
 			count = 0;
 		}
 		else str[yPos][count++] = wParam; // ¹®ÀÚ¸¦ ÀúÀåÇÑ ÈÄ count ¸¦ 1´Ã¸®°í
-		if (count >= MAX && yPos< MAX)
+		if (count >= 99 && yPos< MAX) // ÇÑ Çà¿¡ 99ÀÚ¸¦ ³Ñ±â¸é °³Çà
 		{
 			str[yPos][count] = '\0';
 			lineCounter[yPos] = count;
