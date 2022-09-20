@@ -48,25 +48,38 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)	//�
 	static TCHAR	str[1000][1000];
 	static int		count, yPos;
 	static SIZE		size;
-
+	static bool		flag;
 	switch (iMsg)
 	{
 	case WM_CREATE:
+		CreateCaret(hwnd, NULL, 5, 15);
+		ShowCaret(hwnd);
+		flag = true;
 		yPos = 0;
 		count = 0;
 		break;
 	case WM_PAINT:
 		hdc = BeginPaint(hwnd, &ps);
-		Rectangle(hdc, 50, 50, 300, 300);
-		for (int i = 0; i <= yPos; i++)
+		if(flag == true)
 		{
-			TextOut(hdc, 50, 50 + i * 20, str[i], _tcslen(str[i]));
+			GetTextExtentPoint(hdc, str[yPos], _tcslen(str[yPos]), &size);
+			Rectangle(hdc, 50, 50, 300, 300);
+			for (int i = 0; i <= yPos; i++)
+			{
+				TextOut(hdc, 50, 50 + i * 20, str[i], _tcslen(str[i]));
+			}
+			SetCaretPos(size.cx + 50, yPos * 20 + 50);
+		}
+		else
+		{
+			HideCaret(hwnd);
+			DestroyCaret();
 		}
 		EndPaint(hwnd, &ps);
 		break;
 	case WM_CHAR:
 		hdc = GetDC(hwnd);
-		if(yPos<=250/20) 
+		if(yPos<=250/20-1) 
 		{
 			if (wParam == VK_BACK)
 			{
@@ -92,13 +105,30 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)	//�
 			}
 			else
 			{
-				str[yPos][count++] = wParam;
-				str[yPos][count] = NULL;
+				if (size.cx + 5 >= 250)
+				{
+					str[yPos][count] = '\0';
+					yPos++;
+					count = 0;
+				}
+				else
+				{
+					str[yPos][count++] = wParam;
+					str[yPos][count] = NULL;
+				}
+				
+				
 			}
+		}
+		else
+		{
+			flag = false;
 		}
 		InvalidateRgn(hwnd, NULL, TRUE);
 		break;
 	case WM_DESTROY:
+		HideCaret(hwnd);
+		DestroyCaret();
 		PostQuitMessage(0);
 		break;
 	}	//처리할 메시지만 case문에 나열
