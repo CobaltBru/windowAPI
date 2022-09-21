@@ -70,7 +70,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)	//¸
 			}
 			SetCaretPos(size.cx + 50, yPos * 20 + 50);
 		}
-		else
+		else // ±Û»óÀÚ¸¦ ¹þ¾î³µ´Ù´Â ¶æÀÌ¹Ç·Î Ä³·µÀ» »èÁ¦
 		{
 			HideCaret(hwnd);
 			DestroyCaret();
@@ -79,7 +79,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)	//¸
 		break;
 	case WM_CHAR:
 		hdc = GetDC(hwnd);
-		if(yPos<=250/20-1) 
+		if(yPos<=250/20-1) //±Û»óÀÚÀÇ yÃà ¹üÀ§
 		{
 			if (wParam == VK_BACK)
 			{
@@ -105,7 +105,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)	//¸
 			}
 			else
 			{
-				if (size.cx + 5 >= 250)
+				if (size.cx + 5 >= 250) // ±Û»óÀÚÀÇ xÃà ¹üÀ§
 				{
 					str[yPos][count] = '\0';
 					yPos++;
@@ -120,7 +120,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)	//¸
 				
 			}
 		}
-		else
+		else // ±Û»óÀÚ ¹üÀ§¸¦ ¹þ¾î³ª¸é flag¸¦ false ÇØÁÜ
 		{
 			flag = false;
 		}
