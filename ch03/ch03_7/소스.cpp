@@ -58,8 +58,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_PAINT:
 		hdc = BeginPaint(hwnd, &ps);
-		MoveToEx(hdc, startX, startY, NULL);
-		LineTo(hdc, oldX, oldY);
 		EndPaint(hwnd, &ps);
 		break;
 	case WM_LBUTTONDOWN:
