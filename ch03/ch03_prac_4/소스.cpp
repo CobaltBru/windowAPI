@@ -47,10 +47,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
 	HDC				hdc;
 	PAINTSTRUCT		ps;
-	static int		x, y, oldX, oldY;
-	static RECT		endPoint;
-	static BOOL		enter;
-	static int		way;
+	static int		x, y, oldX, oldY; // 머리 원, 꼬리 원의 좌표
+	static RECT		endPoint; // 한계 좌표
+	static BOOL		enter; // enter키를 눌렀는지 저장할 플래크
+	static int		way; // 방향을 저장할 플래그
 	HPEN hPen, oldPen;
 
 	switch (iMsg)
@@ -65,19 +65,38 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_PAINT:
 		hdc = BeginPaint(hwnd, &ps);
-		Rectangle(hdc, 0, 0, 320, 320);
+		Rectangle(hdc, 0, 0, 320, 320); // 한계를 표시해줄 사각형
+		if (oldX == x && oldY == y)// 두 원이 곂치지 않게 함
+		{
+			switch (way)
+			{
+			case 1:
+				oldX -= 40;
+				break;
+			case 2:
+				oldX += 40;
+				break;
+			case 3:
+				oldY += 40;
+				break;
+			case 4:
+				oldY -= 40;
+				break;
+			}
+		}
 		hPen = CreatePen(PS_SOLID, 1, RGB(0, 0, 255));
 		oldPen = (HPEN)SelectObject(hdc, hPen);
-		Ellipse(hdc, oldX - 20, oldY - 20, oldX + 20, oldY + 20);
+		Ellipse(hdc, oldX - 20, oldY - 20, oldX + 20, oldY + 20); // 파란색 꼬리 원
+
 		hPen = CreatePen(PS_SOLID, 1, RGB(255, 0, 0));
 		oldPen = (HPEN)SelectObject(hdc, hPen);
-		Ellipse(hdc, x - 20, y - 20, x + 20, y + 20);
-		oldX = x; oldY = y;
+		Ellipse(hdc, x - 20, y - 20, x + 20, y + 20); // 빨간색 머리 원
+		oldX = x; oldY = y; // 꼬리 원은 항상 머리 원을 따라다님
 		SelectObject(hdc, oldPen);
 		DeleteObject(hPen);
 		EndPaint(hwnd, &ps);
 		break;
-	case WM_KEYDOWN:
+	case WM_KEYDOWN: // 이하 예제 3과 동일
 		if (wParam == VK_RETURN)
 		{
 			enter = !enter;

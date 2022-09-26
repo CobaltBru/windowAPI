@@ -48,8 +48,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	HDC				hdc;
 	PAINTSTRUCT		ps;
 	static int		x, y;
-	static RECT		rectView;
-	static bool		flag;
+	static RECT		rectView; // 한계 좌표
 
 	switch (iMsg)
 	{
@@ -60,12 +59,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_PAINT:
 		hdc = BeginPaint(hwnd, &ps);
-		Rectangle(hdc, 0, 0, 120, 120);
-		Ellipse(hdc, x - 20, y - 20, x + 20, y + 20);
+		Rectangle(hdc, 0, 0, 120, 120); // 한계 좌표를 표시한 사각형
+		Ellipse(hdc, x - 20, y - 20, x + 20, y + 20); // x,y는 원의 중심 반지름이 20
 		EndPaint(hwnd, &ps);
 		break;
 	case WM_KEYDOWN:
-		if (wParam == VK_RIGHT)
+		if (wParam == VK_RIGHT) // 상하좌우 키 입력. 범위를 넘어가면 되돌림
 		{
 			x += 40;
 			if (x + 20 > rectView.right) x -= 40;
@@ -85,7 +84,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			y += 40;
 			if (y + 20 > rectView.bottom) y -= 40;
 		}
-		else if (wParam == VK_HOME)
+		else if (wParam == VK_HOME) // HOME키를 누르면 초기값으로 돌아감
 		{
 			x = 20;
 			y = 20;

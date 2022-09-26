@@ -49,9 +49,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	HDC				hdc;
 	PAINTSTRUCT		ps;
 	static int		x, y;
-	static RECT		endPoint;
-	static BOOL		enter;
-	static int		way;
+	static RECT		endPoint; // 한계 좌표
+	static BOOL		enter; // 엔터키를 눌렀는지 저장해놓는 플래그
+	static int		way; // 방향을 저장해놓을 플래그
 
 	switch (iMsg)
 	{
@@ -68,11 +68,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		EndPaint(hwnd, &ps);
 		break;
 	case WM_KEYDOWN:
-		if (wParam == VK_RETURN)
+		if (wParam == VK_RETURN) // 엔터키를 누르면 계속 이동해야 한다.
 		{
-			enter = !enter;
+			enter = !enter; // 엔터키를 누를때마다 상태가 변해야 하므로
 		}
-		else if (wParam == VK_RIGHT)
+		else if (wParam == VK_RIGHT) // 키를 입력하면 방향을 저장한후 타이머 세팅
 		{
 			way = 1;
 			SetTimer(hwnd, 1, 70, NULL);
@@ -94,11 +94,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	case WM_TIMER:
-		if(way == 1) {
+		if(way == 1) { // 해당방향으로 이동
 			x += 40;
 			if (x + 20 > endPoint.right) x -= 40;
-			if (!enter)KillTimer(hwnd, 1);
-		}
+			if (!enter)KillTimer(hwnd, 1); // enter가 FALSE 이면 한칸 움직인후 바로 종료
+		}						//enter 가 TRUE이면 way 방향으로 계속 움직임
 		else if (way == 2)
 		{
 			x -= 40;
