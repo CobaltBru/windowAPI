@@ -54,31 +54,32 @@ BOOL InCircle(int x, int y, int mx, int my)
 	else return FALSE;
 }
 
-
 LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
 	HDC			hdc;
 	PAINTSTRUCT	ps;
 	static POINT circle;
-	static POINT Ocircle;
 	static BOOL clicked;
 	static int	startX, startY, oldX, oldY;
 	static BOOL	Drag;
-	static int	endX, endY;
-	static int	moving;
+	int			endX, endY;
+	HBRUSH			hBrush, oldBrush;
+
 	switch (iMsg)
 	{
 	case WM_CREATE:
 		Drag = FALSE;
 		circle.x = 20; circle.y = 20;
-		moving = 0;
 		break;
 	case WM_PAINT:
 		hdc = BeginPaint(hwnd, &ps);
 		if (clicked)
 		{
-			SelectObject(hdc, (HBRUSH)GetStockObject(BLACK_BRUSH));
+			hBrush = CreateSolidBrush(RGB(255, 0, 0));
+			oldBrush = (HBRUSH)SelectObject(hdc, hBrush);
 			Ellipse(hdc, circle.x - 20, circle.y - 20, circle.x + 20, circle.y + 20);
+			SelectObject(hdc, oldBrush);
+			DeleteObject(hBrush);
 		}
 		else
 		{
@@ -89,8 +90,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		EndPaint(hwnd, &ps);
 		break;
 	case WM_LBUTTONDOWN:
-		startX = oldX = 20;
-		startY = oldY = 20;
+		startX = oldX = LOWORD(lParam);
+		startY = oldY = HIWORD(lParam);
 		if (InCircle(circle.x, circle.y, startX, startY))
 		{
 			Drag = TRUE;
@@ -101,14 +102,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	case WM_LBUTTONUP:
 		startX = oldX = 0;
 		startY = oldY = 0;
-		if (Drag)
-		{
-			SetTimer(hwnd, 1, 70, NULL);
-		}
 		Drag = FALSE;
 		clicked = FALSE;
-		circle.x = 20; circle.y = 20;
-		moving = 0;
 		InvalidateRgn(hwnd, NULL, TRUE);
 		break;
 	case WM_MOUSEMOVE:
@@ -128,17 +123,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		}
 		ReleaseDC(hwnd, hdc);
 		break;
-	case WM_TIMER:
-		if (circle.x >= endX && circle.y >= endY) KillTimer(hwnd, 1);
-		moving +=10;
-		circle.x = moving + 20;
-		circle.y = ((double)(endY - 20) / (endX - 20)) * moving + 20;
-		InvalidateRgn(hwnd, NULL, TRUE);
-		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;
 	}
 	return(DefWindowProc(hwnd, iMsg, wParam, lParam));
+
+
 
 }
