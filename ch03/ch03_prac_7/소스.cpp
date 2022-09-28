@@ -60,7 +60,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	HDC			hdc;
 	PAINTSTRUCT	ps;
 	static POINT circle;
-	static POINT Ocircle;
 	static BOOL clicked;
 	static int	startX, startY, oldX, oldY;
 	static BOOL	Drag;
@@ -92,7 +91,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		startX = oldX = 20;
 		startY = oldY = 20;
 		if (InCircle(circle.x, circle.y, startX, startY))
-		{
+		{	//원 안을 클릭했을때만 작동
 			Drag = TRUE;
 			clicked = TRUE;
 		}
@@ -102,12 +101,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		startX = oldX = 0;
 		startY = oldY = 0;
 		if (Drag)
-		{
+		{	//원 안을 클릭해서 직선을 그렸다면 작동
 			SetTimer(hwnd, 1, 70, NULL);
 		}
 		Drag = FALSE;
 		clicked = FALSE;
-		circle.x = 20; circle.y = 20;
+		circle.x = 20; circle.y = 20; // 원 원위치
 		moving = 0;
 		InvalidateRgn(hwnd, NULL, TRUE);
 		break;
@@ -131,7 +130,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	case WM_TIMER:
 		if (circle.x >= endX && circle.y >= endY) KillTimer(hwnd, 1);
 		moving +=10;
-		circle.x = moving + 20;
+		circle.x = moving + 20; // 일차함수 형식으로 경로를 계산
 		circle.y = ((double)(endY - 20) / (endX - 20)) * moving + 20;
 		InvalidateRgn(hwnd, NULL, TRUE);
 		break;
