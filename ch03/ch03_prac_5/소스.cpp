@@ -44,12 +44,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	return (int)msg.wParam;
 }
 
-double LengthPts(int x1, int y1, int x2, int y2) // 점과 점 사이의 거리를 구하는 함수
+double LengthPts(int x1, int y1, int x2, int y2)
 {
 	return(sqrt((float)((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1))));
 }
 
-BOOL InCircle(int x, int y, int mx, int my) // 점이 원 내부에 있는지 검사하는 함수
+BOOL InCircle(int x, int y, int mx, int my)
 {
 	if (LengthPts(x, y, mx, my) < BSIZE) return TRUE;
 	else return FALSE;
@@ -60,7 +60,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	HDC				hdc;
 	PAINTSTRUCT		ps;
 	static int		x, y;
-	static BOOL		Selection; // 선택 상태를 저장하는 값
+	static BOOL		Selection;
 	int				mx, my;
 	HBRUSH			hBrush, oldBrush;
 	switch (iMsg)
@@ -72,7 +72,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	case WM_PAINT:
 		hdc = BeginPaint(hwnd, &ps);
 		
-		if (Selection) // 선택중이면 빨간색 원
+		if (Selection)
 		{
 			hBrush = CreateSolidBrush(RGB(255, 0, 0));
 			oldBrush = (HBRUSH)SelectObject(hdc, hBrush);
@@ -80,7 +80,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			SelectObject(hdc, oldBrush);
 			DeleteObject(hBrush);
 		}
-		else // 아니면 그냥 원
+		else
 		{
 			Ellipse(hdc, x - BSIZE, y - BSIZE, x + BSIZE, y + BSIZE);
 		}
@@ -90,7 +90,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	case WM_LBUTTONDOWN:
 		mx = LOWORD(lParam);
 		my = HIWORD(lParam);
-		if (InCircle(x, y, mx, my)) Selection = !Selection; // 한번 더 누르면 선택이 해제됨
+		if (InCircle(x, y, mx, my)) Selection = !Selection;
 		InvalidateRgn(hwnd, NULL, TRUE);
 		break;
 	case WM_DESTROY:

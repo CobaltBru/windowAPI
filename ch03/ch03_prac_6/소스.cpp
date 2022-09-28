@@ -44,10 +44,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	return (int)msg.wParam;
 }
 
-
-void CatMove(POINT *cat, int mx, int my) // 고양이의 움직임을 구현하는 함수
+double LengthPts(int x1, int y1, int x2, int y2)
 {
-	if (cat->x > mx) // 쥐의 좌표와 비교해서 따라감
+	return(sqrt((float)((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1))));
+}
+
+BOOL InCircle(int x, int y, int mx, int my)
+{
+	if (LengthPts(x, y, mx, my) < BSIZE) return TRUE;
+	else return FALSE;
+}
+
+void CatMove(POINT *cat, int mx, int my)
+{
+	if (cat->x > mx)
 	{
 		cat->x--;
 	}
@@ -70,8 +80,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	HDC				hdc;
 	PAINTSTRUCT		ps;
 	static int		x, y;
-	static BOOL		Selection; // 클릭되어있는지 체크하는 값
-	static POINT	catPoint; // 고양이의 좌표를 저장하는 구조체
+	static BOOL		Selection;
+	static POINT			catPoint;
 	switch (iMsg)
 	{
 	case WM_CREATE:
@@ -81,7 +91,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_PAINT:
 		hdc = BeginPaint(hwnd, &ps);
-		if (Selection) // 클릭되어있으면 쥐 표시
+		if (Selection)
 		{
 			TextOut(hdc, x, y, _T("쥐"), _tcslen(_T("쥐")));
 		}
@@ -93,7 +103,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		x = LOWORD(lParam);
 		y = HIWORD(lParam);
 		Selection = TRUE;
-		SetTimer(hwnd, 1, 1, NULL); // 클릭시 타이머 작동
+		SetTimer(hwnd, 1, 1, NULL);
 		InvalidateRgn(hwnd, NULL, TRUE);
 		break;
 	case WM_LBUTTONUP:
