@@ -179,6 +179,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		InvalidateRgn(hwnd, NULL, TRUE);
 		break;
 	case WM_DESTROY:
+		free(c_array);
 		PostQuitMessage(0);
 		break;
 	}
