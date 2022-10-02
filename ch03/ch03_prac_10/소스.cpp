@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <math.h>
 LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
 
 
@@ -71,7 +72,7 @@ void MoveCircle(POINT circle[], int x, int y, int counter)
 	
 	circle[0].x = curx;
 	circle[0].y = cury;
-	for (int i = 1; i < counter; i++)
+	for (int i = 1; i <= counter; i++)
 	{
 		curx = tmpx;
 		cury = tmpy;
@@ -83,16 +84,48 @@ void MoveCircle(POINT circle[], int x, int y, int counter)
 	return;
 }
 
-void MakeFood(int* food_count, POINT* food[])
+void MakeFood(int* food_count, POINT food[])
 {
 	srand((unsigned)time(NULL));
 	int i = 0;
-	while (food[i] != NULL) i++;
-	food[i] = (POINT*)malloc(sizeof(POINT));
-	food[i]->x = 20 * (rand() % 23) + 30;
-	food[i]->y = 20 * (rand() % 23) + 30;
-	food_count++;
+	while (food[i].x != -1 && food[i].y != -1) ++i;
+	food[i].x = 20 * (rand() % 23) + 30;
+	food[i].y = 20 * (rand() % 23) + 30;
+	*++food_count;
 	return;
+}
+
+double LengthPts(int x1, int y1, int x2, int y2)
+{
+	return(sqrt((float)((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1))));
+}
+
+BOOL InCircle(int x, int y, int mx, int my)
+{
+	if (LengthPts(x, y, mx, my) <= 20) return TRUE;
+	else return FALSE;
+}
+
+void CrashCheck(POINT food[], int* food_count, POINT circle[], int* counter)
+{
+	int i = 0;
+	for (int l = 0; i < *food_count || l < 100; l++)
+	{
+		if (food[l].x != -1 && food[l].y != -1)
+		{
+			if ((food[l].x == circle[0].x) && (food[l].y == circle[0].y))
+			{
+				i++;
+				food[l].x = -1;
+				food[l].y = -1;
+				*--food_count;
+				*++counter;
+				circle[*counter-1].x = circle[*counter - 2].x;
+				circle[*counter-1].y = circle[*counter - 2].y;
+			}
+			i++;
+		}
+	}
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
@@ -100,19 +133,20 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	HDC				hdc;
 	PAINTSTRUCT		ps;
 	static int		x, y, oldX, oldY; // 머리 원, 꼬리 원의 좌표
-	static int		counter;
+	static int		c_counter;
 	static RECT		endPoint; // 한계 좌표
 	static int		way; // 방향을 저장할 플래그
 	static int		food_count;
-	static POINT*	food[1000];
+	static POINT	food[100];
 	static POINT	circle[1000];
 	static int		time_counter;
+	static int		k;
 	HPEN hPen, oldPen;
 	switch (iMsg)
 	{
 	case WM_CREATE:
 		endPoint = { 20,20,480,480 };
-		counter = 3;
+		c_counter = 5;
 		x = 70; y = 430;
 		circle[0].x = 70;
 		circle[0].y = 430;
@@ -122,28 +156,43 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		circle[2].y = 430;
 		food_count = 0;
 		time_counter = 0;
+		k = 0;
+		for (int i = 0; i < 100; i++)
+		{
+			food[i].x = -1;
+			food[i].y = -1;
+		}
 		break;
 	case WM_PAINT:
 		hdc = BeginPaint(hwnd, &ps);
 		MakeMap(hdc);
-		MoveCircle(circle, x, y, counter);
-		hPen = CreatePen(PS_SOLID, 1, RGB(0, 0, 255));
-		oldPen = (HPEN)SelectObject(hdc, hPen);
-		for (int i = 0; i < counter; i++)
-		{
-			Ellipse(hdc, circle[i].x - 10, circle[i].y - 10, circle[i].x + 10, circle[i].y + 10); // 빨간색 머리 원
-		}
+		MoveCircle(circle, x, y, c_counter);
 
 		hPen = CreatePen(PS_SOLID, 1, RGB(255, 0, 0));
 		oldPen = (HPEN)SelectObject(hdc, hPen);
 		Ellipse(hdc, circle[0].x - 10, circle[0].y - 10, circle[0].x + 10, circle[0].y + 10); // 빨간색 머리 원
 		SelectObject(hdc, oldPen);
 		DeleteObject(hPen);
-		
-		for (int i = 0; i < food_count; i++)
+
+		hPen = CreatePen(PS_SOLID, 1, RGB(0, 0, 255));
+		oldPen = (HPEN)SelectObject(hdc, hPen);
+		for (int i = 1; i < c_counter; i++)
 		{
-			Ellipse(hdc, food[i]->x - 10, food[i]->y - 10, food[i]->x + 10, food[i]->y + 10);
+			Ellipse(hdc, circle[i].x - 10, circle[i].y - 10, circle[i].x + 10, circle[i].y + 10); 
 		}
+		SelectObject(hdc, oldPen);
+		DeleteObject(hPen);
+		CrashCheck(food, &food_count, circle, &c_counter);
+		for(int i=0;k<food_count || i<100;i++)
+		{
+			if(food[i].x != -1 && food[i].y != -1)
+			{
+				Ellipse(hdc, food[i].x - 10, food[i].y - 10, food[i].x + 10, food[i].y + 10);
+				k++;
+			}
+			
+		}
+		k = 0;
 		EndPaint(hwnd, &ps);
 		break;
 	case WM_KEYDOWN: // 이하 예제 3과 동일
@@ -199,7 +248,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		InvalidateRgn(hwnd, NULL, TRUE);
 		break;
 	case WM_DESTROY:
-		free(food);
 		KillTimer(hwnd, 1);
 		KillTimer(hwnd, 2);
 		PostQuitMessage(0);
