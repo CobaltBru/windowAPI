@@ -65,6 +65,12 @@ BEGIN
         MENUITEM "복사하기",                        ID_EDITCOPY
         MENUITEM "붙여넣기",                        ID_EDITPASTE
     END
+    POPUP "보기"
+    BEGIN
+        MENUITEM "프로그램정보",                      ID_40018
+        MENUITEM "글꼴 변경",                       ID_FONTDLG
+        MENUITEM "색상 변경",                       ID_COLORDLG
+    END
     POPUP "도움말"
     BEGIN
         MENUITEM "프로그램 정보",                     ID_INFORM

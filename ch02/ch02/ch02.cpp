@@ -45,7 +45,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)	//ë
 {
 	HDC				hdc;
 	PAINTSTRUCT		ps;
-	static TCHAR	str[1000];
+	static TCHAR	str[10];
 	static int		count, yPos;
 	RECT rt = { 0,0,1000,1000 };
 

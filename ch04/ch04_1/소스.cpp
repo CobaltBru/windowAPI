@@ -73,20 +73,73 @@ void OutFromFile(TCHAR filename[], HWND hwnd)
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
-	int answer;
-	OPENFILENAME SFN;
-	OPENFILENAME OFN;
-	TCHAR str[100], lpstrFile[100] = _T("");
-	TCHAR filter[] = _T("Every File(*.*) \0*.*\0Text File\0*.txt;*.doc\0");
-
+	HDC					hdc;
+	PAINTSTRUCT			ps;
+	int					answer;
+	OPENFILENAME		SFN;
+	OPENFILENAME		OFN;
+	TCHAR				str[100], lpstrFile[100] = _T("");
+	TCHAR				filter[] = _T("Every File(*.*) \0*.*\0Text File\0*.txt;*.doc\0");
+	CHOOSEFONT			FONT;
+	static COLORREF		fColor;
+	HFONT				hFont, OldFont;
+	static LOGFONT		LogFont;
+	CHOOSECOLOR			COLOR;
+	static COLORREF		tmp[16], color;
+	HBRUSH				hBrush, OldBrush;
+	int					i;
 
 	switch (iMsg)
 	{
 	case WM_CREATE:
 		break;
+	case WM_PAINT:
+		hdc = BeginPaint(hwnd, &ps);
+		hFont = CreateFontIndirect(&LogFont);
+		OldFont = (HFONT)SelectObject(hdc, hFont);
+		SetTextColor(hdc, fColor);
+		TextOut(hdc, 10, 10, _T("HelloWorld"), 10);
+		SelectObject(hdc, OldFont);
+		DeleteObject(hFont);
+
+		hBrush = CreateSolidBrush(color);
+		OldBrush = (HBRUSH)SelectObject(hdc, hBrush);
+		Ellipse(hdc, 10, 20, 200, 200);
+		SelectObject(hdc, OldBrush);
+		DeleteObject(hBrush);
+		EndPaint(hwnd, &ps);
+		break;
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
+		case ID_COLORDLG:
+			for (i = 0; i < 16; i++)
+			{
+				tmp[i] = RGB(rand() % 256, rand() % 256, rand() % 256);
+			}
+			memset(&COLOR, 0, sizeof(CHOOSECOLOR));
+			COLOR.lStructSize = sizeof(CHOOSECOLOR);
+			COLOR.hwndOwner = hwnd;
+			COLOR.lpCustColors = tmp;
+			COLOR.Flags = CC_FULLOPEN;
+			if (ChooseColor(&COLOR) != 0)
+			{
+				color = COLOR.rgbResult;
+				InvalidateRgn(hwnd, NULL, TRUE);
+			}
+			break;
+		case ID_FONTDLG:
+			memset(&FONT, 0, sizeof(CHOOSEFONT));
+			FONT.lStructSize = sizeof(CHOOSEFONT);
+			FONT.hwndOwner = hwnd;
+			FONT.lpLogFont = &LogFont;
+			FONT.Flags = CF_EFFECTS | CF_SCREENFONTS;
+			if (ChooseFont(&FONT) != 0)
+			{
+				fColor = FONT.rgbColors;
+				InvalidateRgn(hwnd, NULL, TRUE);
+			}
+			break;
 		case ID_FILESAVE:
 			memset(&SFN, 0, sizeof(OPENFILENAME));
 			SFN.lStructSize = sizeof(OPENFILENAME);
