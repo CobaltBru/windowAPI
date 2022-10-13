@@ -3,6 +3,9 @@
 #include <windows.h>
 #include <TCHAR.H>
 #include <stdio.h>
+#include <math.h>
+#define BSIZE 40
+
 LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
 
 
@@ -70,7 +73,16 @@ void OutFromFile(TCHAR filename[], HWND hwnd)
 	ReleaseDC(hwnd, hdc);
 }
 
+double LengthPts(int x1, int y1, int x2, int y2)
+{
+	return(sqrt((float)((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1))));
+}
 
+BOOL InCircle(int x, int y, int mx, int my)
+{
+	if (LengthPts(x, y, mx, my) < BSIZE) return TRUE;
+	else return FALSE;
+}
 LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
 	HDC					hdc;
@@ -88,13 +100,33 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	static COLORREF		tmp[16], color;
 	HBRUSH				hBrush, OldBrush;
 	int					i;
-
+	static HMENU		hMenu, hSubMenu;
+	int					mx, my;
+	static BOOL			Select;
+	static BOOL			Copy;
+	static int			x, y;
 	switch (iMsg)
 	{
 	case WM_CREATE:
+		hMenu = GetMenu(hwnd);
+		hSubMenu = GetSubMenu(hMenu, 1);
+		EnableMenuItem(hSubMenu, ID_EDITCOPY, MF_GRAYED);
+		EnableMenuItem(hSubMenu, ID_EDITPASTE, MF_GRAYED);
+		Select = FALSE;
+		Copy = FALSE;
+		x = 300; y = 300;
 		break;
 	case WM_PAINT:
+		EnableMenuItem(hSubMenu, ID_EDITCOPY,
+			Select ? MF_ENABLED : MF_GRAYED);
+		EnableMenuItem(hSubMenu, ID_EDITPASTE,
+			Copy ? MF_ENABLED : MF_GRAYED);
 		hdc = BeginPaint(hwnd, &ps);
+
+		if (Select)
+			Rectangle(hdc, x - BSIZE, y - BSIZE, x + BSIZE, y + BSIZE);
+		Ellipse(hdc, x - BSIZE, y - BSIZE, x + BSIZE, y + BSIZE);
+
 		hFont = CreateFontIndirect(&LogFont);
 		OldFont = (HFONT)SelectObject(hdc, hFont);
 		SetTextColor(hdc, fColor);
@@ -108,10 +140,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		SelectObject(hdc, OldBrush);
 		DeleteObject(hBrush);
 		EndPaint(hwnd, &ps);
+
+
 		break;
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
+		case ID_EDITCOPY:
+			Copy = TRUE;
+			InvalidateRgn(hwnd, NULL, TRUE);
+			break;
 		case ID_COLORDLG:
 			for (i = 0; i < 16; i++)
 			{
@@ -183,6 +221,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				PostQuitMessage(0);
 			break;
 		}
+		break;
+	case WM_LBUTTONDOWN:
+		mx = LOWORD(lParam);
+		my = HIWORD(lParam);
+		if (InCircle(x, y, mx, my)) Select = TRUE;
+		InvalidateRgn(hwnd, NULL, TRUE);
 		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
