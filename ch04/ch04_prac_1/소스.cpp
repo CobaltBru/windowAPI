@@ -54,11 +54,29 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	OPENFILENAME OFN;
 	TCHAR str[100], lpstrFile[100] = _T("");
 	TCHAR filter[] = _T("C++ 소스와 헤더 파일\0 *.cpp;*.h\0Every File(*.*) \0*.*\0");
+
+	HDC hdc;
+	TCHAR filter2[] = _T("텍스트 파일\0 *.txt\0Every File(*.*) \0*.*\0");
+	OPENFILENAME SFN;
+	PAINTSTRUCT ps;
+	static TCHAR str2[1000];
+	static int count;
+	RECT rt = { 0,0,1000,1000 };
+
 	switch (iMsg)
 	{
 	case WM_CREATE:
 		break;
 	case WM_PAINT:
+		hdc = BeginPaint(hwnd, &ps);
+		DrawText(hdc, str2, _tcslen(str2), &rt, DT_TOP | DT_LEFT);
+		EndPaint(hwnd, &ps);
+		break;
+	case WM_CHAR:
+		if (wParam == VK_BACK && count > 0) count--;
+		else str2[count++] = wParam;
+		str2[count] = NULL;
+		InvalidateRgn(hwnd, NULL, TRUE);
 		break;
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
@@ -84,10 +102,21 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			}
 			break;
 		case ID_FILESAVE:
-			MessageBox(hwnd,
-				_T("파일을 저장하시겠습니까?"),
-				_T("파일 저장"),
-				MB_OKCANCEL);
+			memset(&SFN, 0, sizeof(OPENFILENAME));
+			SFN.lStructSize = sizeof(OPENFILENAME);
+			SFN.hwndOwner = hwnd;
+			SFN.lpstrFilter = filter2;
+			SFN.lpstrFile = lpstrFile;
+			SFN.nMaxFile = 256;
+			SFN.lpstrInitialDir = _T(".");
+			if (GetSaveFileName(&SFN) != 0)
+			{
+				_stprintf_s(str, _T("%s 파일로 저장하겠습니까?"), SFN.lpstrFile);
+				MessageBox(hwnd, str, _T("저장하기 선택"), MB_OK);
+				FILE* fp = _wfopen(SFN.lpstrFile, L"w,ccs=UTF-8");
+				_ftprintf_s(fp, str2);
+				fclose(fp);
+			}
 			break;
 		case ID_EXIT:
 			answer = MessageBox(hwnd,
