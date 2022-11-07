@@ -22,7 +22,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	WndClass.hIcon = LoadIcon(NULL, IDI_QUESTION);		//윈도우 아이콘
 	WndClass.hCursor = LoadCursor(NULL, IDC_IBEAM);		//커서 모양
 	WndClass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);	//배경 색
-	WndClass.lpszMenuName = MAKEINTRESOURCE(IDR_MENU4_PRAC_2);	//메뉴 이름
+	WndClass.lpszMenuName = MAKEINTRESOURCE(IDR_MENU4_PRAC_3);	//메뉴 이름
 	WndClass.lpszClassName = _T("Window Class Name");	//윈도우 클래스 이름
 	RegisterClass(&WndClass);
 	hwnd = CreateWindow(_T("Window Class Name"),
@@ -57,7 +57,13 @@ BOOL InCircle(int x, int y, int mx, int my)
 	if (LengthPts(x, y, mx, my) < BSIZE) return TRUE;
 	else return FALSE;
 }
+typedef struct DrawClass
+{
+	char Shape;
+	POINT One;
+	POINT Two = { -1,-1 };
 
+}DrawClass;
 LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
 	int answer;
@@ -87,7 +93,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_PAINT:
 		hdc = BeginPaint(hwnd, &ps);
-		EnableMenuItem(hSubMenu, ID_EDITPASTE, counter<10?MF_ENABLED:MF_GRAYED);
+		EnableMenuItem(hSubMenu, ID_EDITPASTE, counter < 10 ? MF_ENABLED : MF_GRAYED);
 		for (int i = 0; i < counter; i++)
 		{
 			if (currentPoint == i)
@@ -102,7 +108,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			{
 				Ellipse(hdc, circleList[i].x - 20, circleList[i].y + 20, circleList[i].x + 20, circleList[i].y - 20);
 			}
-			
+
 		}
 		EndPaint(hwnd, &ps);
 		break;
@@ -113,8 +119,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 			break;
 		case ID_EDITPASTE:
-			circleList[counter].x = circleList[counter-1].x + 40;
-			circleList[counter].y = circleList[counter-1].y + 40;
+			circleList[counter].x = circleList[counter - 1].x + 40;
+			circleList[counter].y = circleList[counter - 1].y + 40;
 			counter++;
 			InvalidateRgn(hwnd, NULL, TRUE);
 			break;
@@ -158,7 +164,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				break;
 			}
 		}
-		
+
 		InvalidateRgn(hwnd, NULL, TRUE);
 		break;
 	case WM_DESTROY:
