@@ -3,6 +3,7 @@
 #include <windows.h>
 #include <TCHAR.H>
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 #define BSIZE 40
 
@@ -57,13 +58,15 @@ BOOL InCircle(int x, int y, int mx, int my)
 	if (LengthPts(x, y, mx, my) < BSIZE) return TRUE;
 	else return FALSE;
 }
-typedef struct DrawClass
+typedef struct OBJ
 {
 	char Shape;
-	POINT One;
-	POINT Two = { -1,-1 };
+	int fx, fy;
+	int lx, ly;
+	COLORREF penColor = RGB(0, 0, 0);
+	COLORREF brushColor = RGB(0, 0, 0);
 
-}DrawClass;
+}OBJ;
 LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
 	int answer;
@@ -72,57 +75,96 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	TCHAR str[100], lpstrFile[100] = _T("");
 	TCHAR filter[] = _T("C++ 소스와 헤더 파일\0 *.cpp;*.h\0Every File(*.*) \0*.*\0");
 
-	static HMENU hMenu, hSubMenu;
-	static POINT circleList[10];
-	static int currentPoint;
+	static OBJ OBJList[100];
+	OBJ tmpOBJ;
 	static int counter;
 	HDC hdc;
 	PAINTSTRUCT ps;
 	HPEN hPen, oldPen;
-	int mx, my;
+	HBRUSH hBrush, oldBrush;
+	static int fx, fy;
+	static int lx, ly;
+	static char currentShape; // L E R
 
+	CHOOSECOLOR COLOR;
+	static COLORREF tmp[16], lineColor, brushColor;
 	switch (iMsg)
 	{
 	case WM_CREATE:
-		hMenu = GetMenu(hwnd);
-		hSubMenu = GetSubMenu(hMenu, 1);
-		circleList[0].x = 20;
-		circleList[0].y = 20;
-		currentPoint = -1;
-		counter = 1;
+		counter = 0;
+		currentShape = 'L';
 		break;
 	case WM_PAINT:
 		hdc = BeginPaint(hwnd, &ps);
-		EnableMenuItem(hSubMenu, ID_EDITPASTE, counter < 10 ? MF_ENABLED : MF_GRAYED);
 		for (int i = 0; i < counter; i++)
 		{
-			if (currentPoint == i)
+			hBrush = CreateSolidBrush(OBJList[i].brushColor);
+			hPen = CreatePen(PS_SOLID, 1, OBJList[i].penColor);
+			oldBrush = (HBRUSH)SelectObject(hdc, hBrush);
+			oldPen = (HPEN)SelectObject(hdc, hPen);
+			switch (OBJList[i].Shape)
 			{
-				hPen = CreatePen(PS_SOLID, 1, RGB(255, 0, 0));
-				oldPen = (HPEN)SelectObject(hdc, hPen);
-				Ellipse(hdc, circleList[i].x - 20, circleList[i].y + 20, circleList[i].x + 20, circleList[i].y - 20);
-				SelectObject(hdc, oldPen);
-				DeleteObject(hPen);
+			case 'L':
+				MoveToEx(hdc, OBJList[i].fx, OBJList[i].fy, NULL);
+				LineTo(hdc, OBJList[i].lx, OBJList[i].ly);
+				break;
+			case 'E':
+				Ellipse(hdc, OBJList[i].fx, OBJList[i].fy, OBJList[i].lx, OBJList[i].ly);
+				break;
+			case 'R':
+				Rectangle(hdc, OBJList[i].fx, OBJList[i].fy, OBJList[i].lx, OBJList[i].ly);
+				break;
 			}
-			else
-			{
-				Ellipse(hdc, circleList[i].x - 20, circleList[i].y + 20, circleList[i].x + 20, circleList[i].y - 20);
-			}
-
+			SelectObject(hdc, oldBrush);
+			DeleteObject(hBrush);
+			SelectObject(hdc, oldPen);
+			DeleteObject(hPen);
 		}
 		EndPaint(hwnd, &ps);
 		break;
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
-		case ID_EDITCOPY:
-
+		case ID_LINE:
+			currentShape = 'L';
 			break;
-		case ID_EDITPASTE:
-			circleList[counter].x = circleList[counter - 1].x + 40;
-			circleList[counter].y = circleList[counter - 1].y + 40;
-			counter++;
-			InvalidateRgn(hwnd, NULL, TRUE);
+		case ID_ELLIPSE:
+			currentShape = 'E';
+			break;
+		case ID_RECTANGLE:
+			currentShape = 'R';
+			break;
+		case ID_PENCOLOR:
+			for (int i = 0; i < 16; i++)
+			{
+				tmp[i] = RGB(rand() % 256, rand() % 256, rand() % 256);
+			}
+			memset(&COLOR, 0, sizeof(CHOOSECOLOR));
+			COLOR.lStructSize = sizeof(CHOOSECOLOR);
+			COLOR.hwndOwner = hwnd;
+			COLOR.lpCustColors = tmp;
+			COLOR.Flags = CC_FULLOPEN;
+			if (ChooseColor(&COLOR) != 0)
+			{
+				lineColor = COLOR.rgbResult;
+				InvalidateRgn(hwnd, NULL, TRUE);
+			}
+			break;
+		case ID_FACECOLOR:
+			for (int i = 0; i < 16; i++)
+			{
+				tmp[i] = RGB(rand() % 256, rand() % 256, rand() % 256);
+			}
+			memset(&COLOR, 0, sizeof(CHOOSECOLOR));
+			COLOR.lStructSize = sizeof(CHOOSECOLOR);
+			COLOR.hwndOwner = hwnd;
+			COLOR.lpCustColors = tmp;
+			COLOR.Flags = CC_FULLOPEN;
+			if (ChooseColor(&COLOR) != 0)
+			{
+				brushColor = COLOR.rgbResult;
+				InvalidateRgn(hwnd, NULL, TRUE);
+			}
 			break;
 		case ID_FILENEW:
 			MessageBox(hwnd,
@@ -154,18 +196,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	case WM_LBUTTONDOWN:
-		mx = LOWORD(lParam);
-		my = HIWORD(lParam);
-		for (int i = 0; i < counter; i++)
-		{
-			if (InCircle(circleList[i].x, circleList[i].y, mx, my))
-			{
-				currentPoint = i;
-				break;
-			}
-		}
-
-		InvalidateRgn(hwnd, NULL, TRUE);
+		fx = LOWORD(lParam);
+		fy = HIWORD(lParam);
+		break;
+	case WM_LBUTTONUP:
+	lx = LOWORD(lParam);
+	ly = HIWORD(lParam);
+	tmpOBJ = { currentShape, fx,fy,lx,ly, lineColor, brushColor };
+	OBJList[counter] = tmpOBJ;
+	counter++;
+	InvalidateRgn(hwnd, NULL, TRUE);
 		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
