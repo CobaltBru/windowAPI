@@ -58,10 +58,19 @@ BOOL InCircle(int x, int y, int mx, int my)
 	if (LengthPts(x, y, mx, my) < BSIZE) return TRUE;
 	else return FALSE;
 }
+
+BOOL InRectangle(OBJ object, int x, int y)
+{
+	if (object.fx <= x && object.fy <= y && object.lx >= x && object.ly >= y)
+	{
+		return true;
+	}
+	else return false;
+}
 typedef struct OBJ
 {
 	char Shape;
-	int fx, fy;
+	int fx = -1, fy = -1;
 	int lx, ly;
 	COLORREF penColor = RGB(0, 0, 0);
 	COLORREF brushColor = RGB(0, 0, 0);
@@ -88,9 +97,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 	CHOOSECOLOR COLOR;
 	static COLORREF tmp[16], lineColor, brushColor;
+
+	static FILE* fp;
+
+	static bool selector;
+	static bool currentSelect;
 	switch (iMsg)
 	{
 	case WM_CREATE:
+		selector = false;
+		currentSelect = -1;
 		counter = 0;
 		currentShape = 'L';
 		break;
@@ -125,6 +141,30 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
+		case ID_SELECT:
+			if (selector == true) selector = false;
+			else selector = true;
+			
+			break;
+		case ID_FILEOPEN:
+			fp = fopen("savedata.dat", "rb");
+			fread(OBJList, sizeof(OBJ), 100, fp);
+			fclose(fp);
+			for (int i = 0; i < 100; i++)
+			{
+				if (OBJList[i].fx == -1 && OBJList[i].fy == -1)
+				{
+					counter = i;
+					break;
+				}
+			}
+			InvalidateRgn(hwnd, NULL, TRUE);
+			break;
+		case ID_FILESAVE:
+			fp = fopen("savedata.dat", "wb");
+			fwrite(OBJList, sizeof(OBJ), 100, fp);
+			fclose(fp);
+			break;
 		case ID_LINE:
 			currentShape = 'L';
 			break;
@@ -172,20 +212,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				_T("새 파일 선택"),
 				MB_OKCANCEL);
 			break;
-		case ID_FILEOPEN:
-			memset(&OFN, 0, sizeof(OPENFILENAME));
-			OFN.lStructSize = sizeof(OPENFILENAME);
-			OFN.hwndOwner = hwnd;
-			OFN.lpstrFilter = filter;
-			OFN.lpstrFile = lpstrFile;
-			OFN.nMaxFile = 100;
-			OFN.lpstrInitialDir = _T(".");
-			if (GetOpenFileName(&OFN) != 0)
-			{
-				_stprintf_s(str, _T("%s 파일을 열겠습니까?"), OFN.lpstrFile);
-				MessageBox(hwnd, str, _T("열기 선택"), MB_OK);
-			}
-			break;
 		case ID_EXIT:
 			answer = MessageBox(hwnd,
 				_T("파일을 저장하고 끝내시겠습니까?"),
@@ -198,14 +224,30 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	case WM_LBUTTONDOWN:
 		fx = LOWORD(lParam);
 		fy = HIWORD(lParam);
+		
 		break;
 	case WM_LBUTTONUP:
-	lx = LOWORD(lParam);
-	ly = HIWORD(lParam);
-	tmpOBJ = { currentShape, fx,fy,lx,ly, lineColor, brushColor };
-	OBJList[counter] = tmpOBJ;
-	counter++;
-	InvalidateRgn(hwnd, NULL, TRUE);
+		if (selector == true)
+		{
+			for (int i = 0; i < counter; i++)
+			{
+				if (InRectangle(OBJList[i], fx, fy))
+				{
+					currentSelect = i;
+					break;
+				}
+			}
+		}
+		else
+		{
+			lx = LOWORD(lParam);
+			ly = HIWORD(lParam);
+			tmpOBJ = { currentShape, fx,fy,lx,ly, lineColor, brushColor };
+			OBJList[counter] = tmpOBJ;
+			counter++;
+			InvalidateRgn(hwnd, NULL, TRUE);
+		}
+		
 		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);

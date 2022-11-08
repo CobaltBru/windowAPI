@@ -64,6 +64,7 @@ BEGIN
         MENUITEM "취소하기",                        ID_EDITUNDO
         MENUITEM "복사하기",                        ID_EDITCOPY
         MENUITEM "붙여넣기",                        ID_EDITPASTE
+        MENUITEM "선택하기",                        ID_SELECT
     END
     POPUP "그리기"
     BEGIN
