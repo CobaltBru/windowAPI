@@ -48,6 +48,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	return (int)msg.wParam;
 }
 
+typedef struct OBJ
+{
+	char Shape;
+	int fx = -1, fy = -1;
+	int lx, ly;
+	COLORREF penColor = RGB(0, 0, 0);
+	COLORREF brushColor = RGB(0, 0, 0);
+
+}OBJ;
 double LengthPts(int x1, int y1, int x2, int y2)
 {
 	return(sqrt((float)((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1))));
@@ -67,15 +76,7 @@ BOOL InRectangle(OBJ object, int x, int y)
 	}
 	else return false;
 }
-typedef struct OBJ
-{
-	char Shape;
-	int fx = -1, fy = -1;
-	int lx, ly;
-	COLORREF penColor = RGB(0, 0, 0);
-	COLORREF brushColor = RGB(0, 0, 0);
 
-}OBJ;
 LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
 	int answer;
@@ -101,7 +102,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	static FILE* fp;
 
 	static bool selector;
-	static bool currentSelect;
+	static int currentSelect;
 	switch (iMsg)
 	{
 	case WM_CREATE:
@@ -136,15 +137,25 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			SelectObject(hdc, oldPen);
 			DeleteObject(hPen);
 		}
+		if (selector == true)
+		{
+			Rectangle(hdc, OBJList[currentSelect].fx - 5, OBJList[currentSelect].fy - 5, OBJList[currentSelect].fx, OBJList[currentSelect].fy);
+			Rectangle(hdc, OBJList[currentSelect].lx, OBJList[currentSelect].fy - 5, OBJList[currentSelect].lx + 5, OBJList[currentSelect].fy);
+			Rectangle(hdc, OBJList[currentSelect].fx - 5, OBJList[currentSelect].ly + 5, OBJList[currentSelect].fx, OBJList[currentSelect].ly);
+			Rectangle(hdc, OBJList[currentSelect].lx, OBJList[currentSelect].ly, OBJList[currentSelect].lx + 5, OBJList[currentSelect].ly + 5);
+		}
 		EndPaint(hwnd, &ps);
 		break;
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
 		case ID_SELECT:
-			if (selector == true) selector = false;
+			if (selector == true) 
+			{
+				selector = false;
+				InvalidateRgn(hwnd, NULL, TRUE);
+			}
 			else selector = true;
-			
 			break;
 		case ID_FILEOPEN:
 			fp = fopen("savedata.dat", "rb");
@@ -187,6 +198,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			if (ChooseColor(&COLOR) != 0)
 			{
 				lineColor = COLOR.rgbResult;
+				if (selector == true) OBJList[currentSelect].penColor = lineColor;
 				InvalidateRgn(hwnd, NULL, TRUE);
 			}
 			break;
@@ -203,6 +215,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			if (ChooseColor(&COLOR) != 0)
 			{
 				brushColor = COLOR.rgbResult;
+				if (selector == true) OBJList[currentSelect].brushColor = brushColor;
 				InvalidateRgn(hwnd, NULL, TRUE);
 			}
 			break;
@@ -224,21 +237,21 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	case WM_LBUTTONDOWN:
 		fx = LOWORD(lParam);
 		fy = HIWORD(lParam);
-		
-		break;
-	case WM_LBUTTONUP:
 		if (selector == true)
 		{
 			for (int i = 0; i < counter; i++)
 			{
-				if (InRectangle(OBJList[i], fx, fy))
+				if (OBJList[i].Shape == 'R' && InRectangle(OBJList[i], fx, fy))
 				{
 					currentSelect = i;
 					break;
 				}
 			}
+			InvalidateRgn(hwnd, NULL, TRUE);
 		}
-		else
+		break;
+	case WM_LBUTTONUP:
+		if (selector == false)
 		{
 			lx = LOWORD(lParam);
 			ly = HIWORD(lParam);
@@ -247,7 +260,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			counter++;
 			InvalidateRgn(hwnd, NULL, TRUE);
 		}
-		
 		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
