@@ -1,0 +1,108 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// 한국어(대한민국) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_KOR)
+LANGUAGE LANG_KOREAN, SUBLANG_DEFAULT
+#pragma code_page(949)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MENU4_PRAC_9 MENU
+BEGIN
+    POPUP "파일"
+    BEGIN
+        MENUITEM "새글",                          ID_FILENEW
+        MENUITEM "열기",                          ID_FILEOPEN
+        MENUITEM "저장",                          ID_FILESAVE
+        MENUITEM "끝내기",                         ID_EXIT
+    END
+    POPUP "편집"
+    BEGIN
+        MENUITEM "취소하기",                        ID_EDITUNDO
+        MENUITEM "복사하기",                        ID_EDITCOPY
+        MENUITEM "붙여넣기",                        ID_EDITPASTE
+        MENUITEM "선택하기",                        ID_SELECT
+    END
+    POPUP "그리기"
+    BEGIN
+        POPUP "그리기 객체"
+        BEGIN
+            MENUITEM "직선",                          ID_LINE
+            MENUITEM "원",                           ID_ELLIPSE
+            MENUITEM "사각형",                         ID_RECTANGLE
+        END
+        POPUP "색상"
+        BEGIN
+            MENUITEM "선 색",                         ID_PENCOLOR
+            MENUITEM "면 색",                         ID_FACECOLOR
+        END
+    END
+    POPUP "도움말"
+    BEGIN
+        MENUITEM "프로그램 정보",                     ID_INFORM
+    END
+    POPUP "텍스트 출력"
+    BEGIN
+        MENUITEM "글쓰기",                         ID_WRITE
+        MENUITEM "폰트 선택",                       ID_FONT
+    END
+END
+
+#endif    // 한국어(대한민국) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

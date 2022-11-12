@@ -23,7 +23,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	WndClass.hIcon = LoadIcon(NULL, IDI_QUESTION);		//윈도우 아이콘
 	WndClass.hCursor = LoadCursor(NULL, IDC_IBEAM);		//커서 모양
 	WndClass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);	//배경 색
-	WndClass.lpszMenuName = MAKEINTRESOURCE(IDR_MENU4_PRAC_3);	//메뉴 이름
+	WndClass.lpszMenuName = MAKEINTRESOURCE(IDR_MENU4_PRAC_9);	//메뉴 이름
 	WndClass.lpszClassName = _T("Window Class Name");	//윈도우 클래스 이름
 	RegisterClass(&WndClass);
 	hwnd = CreateWindow(_T("Window Class Name"),
@@ -55,7 +55,7 @@ typedef struct OBJ
 	int lx, ly;
 	COLORREF penColor = RGB(0, 0, 0);
 	COLORREF brushColor = RGB(0, 0, 0);
-
+	TCHAR str[1000];
 }OBJ;
 double LengthPts(int x1, int y1, int x2, int y2)
 {
@@ -85,16 +85,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	TCHAR str[100], lpstrFile[100] = _T("");
 	TCHAR filter[] = _T("C++ 소스와 헤더 파일\0 *.cpp;*.h\0Every File(*.*) \0*.*\0");
 
-	static OBJ OBJList[100]; 
-	OBJ tmpOBJ;		// 객체를 생성하는 도중 임시로 쓸 객체
-	static int counter; // 현재 몇개의 객체가 생성되었나
+	static OBJ OBJList[100];
+	OBJ tmpOBJ;
+	static int counter;
 	HDC hdc;
 	PAINTSTRUCT ps;
 	HPEN hPen, oldPen;
 	HBRUSH hBrush, oldBrush;
-	static int fx, fy; // 좌상단
-	static int lx, ly; // 우하단
-	static char currentShape; // L E R. 선택한 메뉴에 따라 타입을 저장해둔다
+	static int fx, fy;
+	static int lx, ly;
+	static char currentShape; // L E R
 
 	CHOOSECOLOR COLOR;
 	static COLORREF tmp[16], lineColor, brushColor;
@@ -103,10 +103,17 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 	static bool selector;
 	static int currentSelect;
+
+	static RECT rt;
+	static bool writeState;
+	static TCHAR tmpStr[1000];
+	static int strcount;
 	switch (iMsg)
 	{
 	case WM_CREATE:
+		strcount = 0;
 		selector = false;
+		writeState = false;
 		currentSelect = -1;
 		counter = 0;
 		currentShape = 'L';
@@ -131,6 +138,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			case 'R':
 				Rectangle(hdc, OBJList[i].fx, OBJList[i].fy, OBJList[i].lx, OBJList[i].ly);
 				break;
+			case 'T':
+				rt = { OBJList[i].fx, OBJList[i].fy, OBJList[i].lx, OBJList[i].ly };
+				Rectangle(hdc, OBJList[i].fx, OBJList[i].fy, OBJList[i].lx, OBJList[i].ly);
+				DrawText(hdc, OBJList[i].str, _tcslen(OBJList[i].str), &rt, DT_TOP | DT_LEFT);
+				break;
 			}
 			SelectObject(hdc, oldBrush);
 			DeleteObject(hBrush);
@@ -149,8 +161,17 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
+		case ID_WRITE:
+			if (writeState == true)
+			{
+				writeState = false;
+				InvalidateRgn(hwnd, NULL, TRUE);
+			}
+			else writeState = true;
+			currentShape = 'T';
+			break;
 		case ID_SELECT:
-			if (selector == true) 
+			if (selector == true)
 			{
 				selector = false;
 				InvalidateRgn(hwnd, NULL, TRUE);
@@ -234,9 +255,19 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 		break;
+	case WM_CHAR:
+		if (writeState == true)
+		{
+			if (wParam == VK_BACK && strcount > 0) strcount--;
+			else OBJList[counter-1].str[strcount++] = wParam;
+			OBJList[counter - 1].str[strcount] = NULL;
+			InvalidateRgn(hwnd, NULL, TRUE);
+		}
+		break;
 	case WM_LBUTTONDOWN:
 		fx = LOWORD(lParam);
 		fy = HIWORD(lParam);
+		strcount = 0;
 		if (selector == true)
 		{
 			for (int i = 0; i < counter; i++)

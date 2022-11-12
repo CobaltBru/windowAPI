@@ -67,9 +67,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	TCHAR filter[] = _T("C++ 소스와 헤더 파일\0 *.cpp;*.h\0Every File(*.*) \0*.*\0");
 
 	static HMENU hMenu, hSubMenu;
-	static POINT circleList[10];
-	static int currentPoint;
-	static int counter;
+	static POINT circleList[10];  // 현재 생성된 원의 좌표배열
+	static int currentPoint;      // 현재 클릭한 원의 좌표
+	static int counter;           // 현재 생성된 원의 갯수
 	HDC hdc;
 	PAINTSTRUCT ps;
 	HPEN hPen, oldPen;
