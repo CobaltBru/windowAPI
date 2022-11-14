@@ -87,7 +87,6 @@ BEGIN
     POPUP "텍스트 출력"
     BEGIN
         MENUITEM "글쓰기",                         ID_WRITE
-        MENUITEM "폰트 선택",                       ID_FONT
     END
 END
 
