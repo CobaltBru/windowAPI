@@ -24,8 +24,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	WndClass.hIcon = LoadIcon(NULL, IDI_QUESTION);		//윈도우 아이콘
 	WndClass.hCursor = LoadCursor(NULL, IDC_IBEAM);		//커서 모양
 	WndClass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);	//배경 색
-	//WndClass.lpszMenuName = MAKEINTRESOURCE(IDR_MENU4_PRAC_3);	//메뉴 이름
 	WndClass.lpszClassName = _T("Window Class Name");	//윈도우 클래스 이름
+	WndClass.lpszMenuName = NULL;
 	RegisterClass(&WndClass);
 	hwnd = CreateWindow(_T("Window Class Name"),
 		_T("Cobaltbru's First Window"),		//윈도우 타이틀 이름
@@ -64,7 +64,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		hdc = BeginPaint(hwnd, &ps);
 		memdc = CreateCompatibleDC(hdc);
 		SelectObject(memdc, hBitmap);
-		BitBlt(hdc, 0, 0, 1000, 900, memdc, 0, 0, SRCCOPY);
+		StretchBlt(hdc, 0, 0, 500, 500, memdc, 0, 0,1000,900, SRCCOPY);
 		DeleteDC(memdc);
 		EndPaint(hwnd, &ps);
 		break;
